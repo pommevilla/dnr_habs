@@ -1,0 +1,55 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+This is some plain text. Whatever.
+
+```{r}
+plot(1:10)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+```
+
+
+```{r}
+dnr.2018 <- read_xlsx("data/DNR_data/IowaDNR_2018_Data_Merged.xlsx") %>%
+  janitor::clean_names() %>% 
+  filter(!is.na(collected_date)) %>% 
+    mutate(hazard_class = if_else(
+    microcystin_raw_value_ug_l > 8,
+    "hazardous",
+    "safe"
+  )) 
+```
+
+
+```{r}
+dnr.2018 %>% 
+  count(hazard_class)
+```
+
+```{r}
+dnr.2018 %>% 
+  filter(hazard_class != "safe") %>% 
+  count(environmental_location) %>% 
+  mutate(environmental_location = fct_reorder(environmental_location, n)) %>% 
+  ggplot(aes(n, environmental_location)) + 
+  geom_col() +
+  labs(
+    y = "Lake",
+    x = "# Hazardous cases",
+    title = "Viking Lake is nasty"
+  ) +
+  theme_minimal() + 
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank()
+  )
+```
+
